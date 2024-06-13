@@ -1,8 +1,8 @@
-const user = require('../models/users');
+const users = require('../models/users');
 const md5 = require('md5');
 const initAdmin = async () => {
 
-    if (await user.findOne({ username: 'admin123' })) {
+    if (await users.findOne({ username: 'admin123' })) {
         console.log("Đã có tài khoản admin trong hệ thống!");
         return;
     }

@@ -3,6 +3,8 @@ var router = express.Router();
 const jwt = require('jsonwebtoken');
 const config = require('../config/auth');
 const users = require('../models/users');
+const balanceFluctuations = require('../models/balanceFluctuation');
+const historyBet = require('../models/games/historyBet');
 
 
 const jwtMiddleware = require('../middleware/jwtMiddleware');
@@ -35,4 +37,60 @@ router.get('/profile', jwtMiddleware.verifyToken, function (req, res, next) {
     });
 });
 
+//balanceFluctuations
+router.get('/get-balance-fluctuation/:userID', jwtMiddleware.verifyToken, async (req, res, next) => {
+    const { page, result } = req.query;
+    const { userID } = req.params;
+
+    if (!userID) {
+        return res.status(400).send({ message: "Người dùng không hợp lệ" });
+    }
+
+    const OPTIONS = {
+        page: parseInt(page, 10) || 1,
+        limit: parseInt(result, 10) || 10,
+        sort: { createAt: -1 },
+        populate: 'user'
+    }
+    const query = {};
+    query.userID = userID;
+    if (req.query.type) {
+        query.type = req.query.type;
+    }
+    if (req.query.fromDate && req.query.toDate) {
+        query.createAt = { $gte: req.query.fromDate, $lte: req.query.toDate }
+    }
+
+    const balanceFluctuationData = await balanceFluctuations.paginate(query, OPTIONS);
+
+    res.status(200).send(balanceFluctuationData);
+
+})
+router.get('/historybet/:userID', jwtMiddleware.verifyToken, async (req, res, next) => {
+    const { page, result } = req.query;
+    const { userID } = req.params;
+
+    if (!userID) {
+        return res.status(400).send({ message: "Người dùng không hợp lệ" });
+    }
+
+    const OPTIONS = {
+        page: parseInt(page, 10) || 1,
+        limit: parseInt(result, 10) || 10,
+        sort: { createAt: -1 },
+        populate: 'betData'
+    }
+    const query = {};
+    query.userID = userID;
+    if (req.query.type) {
+        query.type = req.query.type;
+    }
+    if (req.query.fromDate && req.query.toDate) {
+        query.createAt = { $gte: req.query.fromDate, $lte: req.query.toDate }
+    }
+
+    const historyBetsData = await historyBet.paginate(query, OPTIONS);
+
+    res.status(200).send(historyBetsData);
+});
 module.exports = router;

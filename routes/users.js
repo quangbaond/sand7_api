@@ -3,6 +3,7 @@ var router = express.Router();
 const users = require('../models/users');
 
 const jwtMiddleware = require('../middleware/jwtMiddleware');
+const balanceFluctuations = require('../models/balanceFluctuation');
 
 /* GET users listing. */
 router.get('/', jwtMiddleware.verifyToken, function (req, res, next) {
@@ -47,6 +48,27 @@ router.put('/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
   const { phone, balance, status, email, role } = req.body;
 
   // update user
+  const user = await users.findById(id);
+  if (!user) {
+    return res.status(404).send('User not found');
+  }
+
+  let type = 'plus';
+  let amount = balance - user.balance;
+  if (amount < 0) {
+    type = 'minus';
+    amount = Math.abs(amount);
+  }
+  const formatDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''); // 2019-12-10 10:00:00
+  const balanceFluctuation = new balanceFluctuations({
+    userID: id,
+    amount,
+    type,
+    description: 'Update balance',
+    reson: `Bạn được cập nhật số dư ${formatCurrency(user.balance)} thành ${formatCurrency(parseFloat(balance))} vào lúc ${formatDate}`,
+  });
+  await balanceFluctuation.save();
+
   const userUpdate = await users.findByIdAndUpdate(id, { phone, balance: parseFloat(balance), status, email, role });
 
   if (!userUpdate) {
@@ -55,6 +77,10 @@ router.put('/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
   res.status(200).send(userUpdate);
 });
 
+const formatCurrency = (value) => {
+  if (!value) return 0;
+  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
 
 
 

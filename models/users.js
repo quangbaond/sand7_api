@@ -20,10 +20,7 @@ const users = new Schema({
     lastLogin: { type: Date, default: Date.now, required: false },
     inviteCode: { type: String, required: false },
     userInvite: { type: Schema.ObjectId, required: false },
-}, {
-    virtuals: true
-
-}, { collection: 'users' })
+}, { collection: 'users', virtuals: true, toJSON: { virtuals: true } })
 
 users.index({ email: 1, username: 1 })
 users.virtual('userInvited', {
@@ -31,6 +28,12 @@ users.virtual('userInvited', {
     localField: 'userInvite',
     foreignField: '_id',
     justOne: true
+});
+users.virtual('balanceFluctuations', {
+    ref: 'balanceFluctuations',
+    localField: '_id',
+    foreignField: 'userID',
+    justOne: false
 });
 users.plugin(mongoosePaginate)
 
