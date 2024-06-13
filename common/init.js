@@ -2,14 +2,14 @@ const user = require('../models/users');
 const md5 = require('md5');
 const initAdmin = async () => {
 
-    if (await user.findOne({ username: 'admin' })) {
+    if (await user.findOne({ username: 'admin123' })) {
         console.log("Đã có tài khoản admin trong hệ thống!");
         return;
     }
-    const username = 'admin';
-    const password = 'admin';
+    const username = 'admin123';
+    const password = 'admin123';
 
-    const password2 = 'admin';
+    const password2 = 'admin123';
     const email = 'admin@gmail.com';
     const phone = '0123456789';
 
