@@ -19,9 +19,19 @@ const users = new Schema({
     betToday: { type: Number, default: 0 },
     lastLogin: { type: Date, default: Date.now, required: false },
     inviteCode: { type: String, required: false },
-    userInvite: { type: Schema.ObjectId, required: false, },
+    userInvite: { type: Schema.ObjectId, required: false },
+}, {
+    virtuals: true
+
 }, { collection: 'users' })
 
 users.index({ email: 1, username: 1 })
+users.virtual('userInvited', {
+    ref: 'users',
+    localField: 'userInvite',
+    foreignField: '_id',
+    justOne: true
+});
 users.plugin(mongoosePaginate)
+
 module.exports = mongoose.model('users', users)

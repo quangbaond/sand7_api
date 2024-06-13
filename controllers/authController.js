@@ -32,6 +32,8 @@ const login = async (req, res) => {
 
         req.session.token = token;
 
+        console.log('token', token);
+
         // update last login
         await user.updateOne({ _id: userLogin._id }, { lastLogin: new Date() });
 

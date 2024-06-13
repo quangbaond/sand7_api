@@ -11,6 +11,8 @@ const cors = require('cors');
 const usersRouter = require('./routes/users');
 const authenRouter = require('./routes/authen');
 const configRouter = require('./routes/config');
+const meRouter = require('./routes/me');
+const history1Router = require('./routes/history');
 
 const app = express();
 
@@ -28,7 +30,9 @@ app.use(
 );
 app.use(cors());
 app.use('/api/users', usersRouter);
+app.use('/api/me', meRouter);
 app.use('/api/auth', authenRouter);
 app.use('/api/config', configRouter);
+app.use('/api/history', history1Router);
 
 module.exports = app;
