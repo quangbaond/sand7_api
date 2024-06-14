@@ -12,6 +12,7 @@ const Sx5dCron = require('../cronjobs/Sx5d');
 const Sx5d = require('../models/games/Sx5d');
 const historyBet = require('../models/games/historyBet');
 const users = require('../models/users');
+const settings = require('../models/setting');
 
 const fs = require('fs');
 const path = require('path');
@@ -156,17 +157,31 @@ const getGame = async (type = 'sx5d') => {
           for (const item of historyBetResult) {
             const betDataInUser = item.betInUser;
             if (betDataInUser.length > 0) {
-              const winnings = checkWin(resultBet, betDataInUser);
+              const settingsData = await settings.findOne({ name: 'game' });
+              const winnings = checkWin(resultBet, betDataInUser, settingsData.value);
 
               if (winnings.length > 0) {
-                console.log('winnings', winnings);
-                const user = await users.findOne({ _id: item.userID });
-                let amountAItem = item.amount / item.betInUser.length;
-                console.log('amountAItem', amountAItem);
-                let totalPrize = winnings.length * amountAItem * 1.98;
-                user.balance += totalPrize;
-                await user.save();
-                io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
+                // check winner and send prize is special
+
+                const special = winnings.filter(item => item.prize === 'Special');
+
+                if (special.length > 0) {
+                  const user = await users.findOne({ _id: item.userID });
+                  let amountAItem = item.amount / item.betInUser.length;
+                  // let totalPrize = special.length * amountAItem * 1.98;
+                  // totalPrize sẽ được tính theo tỉ lệ 5% của tổng số tiền cược và trả lại số tiền cược
+                  let totalPrize = item.amount * 0.05 + item.amount;
+                  user.balance += totalPrize;
+                  await user.save();
+                  io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
+                } else {
+                  const user = await users.findOne({ _id: item.userID });
+                  let amountAItem = item.amount / item.betInUser.length;
+                  let totalPrize = winnings.length * amountAItem * 1.98;
+                  user.balance += totalPrize;
+                  await user.save();
+                  io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
+                }
               } else {
                 io.emit(`lose-${item.userID}-${type}`, { userID: item.userID, prize: 0 });
               }
@@ -187,15 +202,15 @@ const createSession = async (type = 'sx5d') => {
   getGame(type);
 }
 createSession('sx5d');
-createSession('xs2');
-createSession('veso');
-createSession('mayman');
-createSession('nhanh3');
-createSession('pkdon');
-createSession('veso1');
-createSession('3d');
+// createSession('xs2');
+// createSession('veso');
+// createSession('mayman');
+// createSession('nhanh3');
+// createSession('pkdon');
+// createSession('veso1');
+// createSession('3d');
 
-function checkWin(results, bets) {
+function checkWin(results, bets, setting = '2.1') {
   const prizeTypes = {
     1: 'Large',
     2: 'Small',
@@ -209,14 +224,19 @@ function checkWin(results, bets) {
     const { id, value } = bet;
     const result = results[id];
 
-    if (value === 1 && result > 2) { // Large (number > 2)
-      prize.push({ id, prize: prizeTypes[1] });
-    } else if (value === 2 && result <= 2) { // Small (number <= 2)
-      prize.push({ id, prize: prizeTypes[2] });
-    } else if (value === 3 && result % 2 !== 0) { // Odd (number is odd)
-      prize.push({ id, prize: prizeTypes[3] });
-    } else if (value === 4 && result % 2 === 0) { // Even (number is even)
-      prize.push({ id, prize: prizeTypes[4] });
+    // Kiểm tra điều kiện setting == '2.1' và id == 0
+    if (setting === '2.1' && id === 0 && (value === 1 || value === 2)) {
+      prize.push({ id, prize: 'Special' });
+    } else {
+      if (value === 1 && result > 2) { // Large (number > 2)
+        prize.push({ id, prize: prizeTypes[1] });
+      } else if (value === 2 && result <= 2) { // Small (number <= 2)
+        prize.push({ id, prize: prizeTypes[2] });
+      } else if (value === 3 && result % 2 !== 0) { // Odd (number is odd)
+        prize.push({ id, prize: prizeTypes[3] });
+      } else if (value === 4 && result % 2 === 0) { // Even (number is even)
+        prize.push({ id, prize: prizeTypes[4] });
+      }
     }
   });
 

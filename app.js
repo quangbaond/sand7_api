@@ -13,6 +13,7 @@ const authenRouter = require('./routes/authen');
 const configRouter = require('./routes/config');
 const meRouter = require('./routes/me');
 const history1Router = require('./routes/history');
+const settingRouter = require('./routes/setting');
 
 const app = express();
 
@@ -34,5 +35,6 @@ app.use('/api/me', meRouter);
 app.use('/api/auth', authenRouter);
 app.use('/api/config', configRouter);
 app.use('/api/history', history1Router);
+app.use('/api/setting', settingRouter);
 
 module.exports = app;

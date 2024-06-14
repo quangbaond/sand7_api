@@ -1,5 +1,7 @@
 const users = require('../models/users');
 const md5 = require('md5');
+const settingGame = require('../models/setting');
+
 const initAdmin = async () => {
 
     if (await users.findOne({ username: 'admin123' })) {
@@ -30,6 +32,23 @@ const initAdmin = async () => {
     return "Đã tạo tài khoản admin thành công!";
 }
 
+const intSettingGame = async () => {
+    if (await settingGame.findOne({ name: 'game' })) {
+        console.log("Đã có cài đặt game trong hệ thống!");
+        return;
+    }
+
+    await settingGame.create({
+        name: 'game',
+        value: '1.98'
+    })
+
+    console.info("Đã tạo cài đặt game thành công!");
+
+    return "Đã tạo cài đặt game thành công!";
+}
+
 module.exports = {
-    initAdmin
+    initAdmin,
+    intSettingGame
 }
