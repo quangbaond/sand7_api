@@ -158,7 +158,7 @@ const getGame = async (type = 'sx5d') => {
             const betDataInUser = item.betInUser;
             if (betDataInUser.length > 0) {
               const settingsData = await settings.findOne({ name: 'game' });
-              const winnings = checkWin(resultBet, betDataInUser, settingsData.value);
+              const winnings = checkWin(resultBet, betDataInUser, settingsData.value, type);
 
               if (winnings.length > 0) {
                 // check winner and send prize is special
@@ -210,7 +210,7 @@ createSession('sx5d');
 // createSession('veso1');
 // createSession('3d');
 
-function checkWin(results, bets, setting = '2.1') {
+function checkWin(results, bets, setting = '2.1', type = 'sx5d') {
   const prizeTypes = {
     1: 'Large',
     2: 'Small',
@@ -225,7 +225,7 @@ function checkWin(results, bets, setting = '2.1') {
     const result = results[id];
 
     // Kiểm tra điều kiện setting == '2.1' và id == 0
-    if (setting === '2.1' && id === 0 && (value === 1 || value === 2)) {
+    if (setting === '2.1' && id === 0 && (value === 1 || value === 2) && type === 'sx5d') {
       prize.push({ id, prize: 'Special' });
     } else {
       if (value === 1 && result > 2) { // Large (number > 2)
