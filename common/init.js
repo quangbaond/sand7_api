@@ -17,7 +17,7 @@ const initAdmin = async () => {
 
     const inviteCode = '888';
 
-    await user.create({
+    await users.create({
         username,
         password: md5(password),
         password2: md5(password2),

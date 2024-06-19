@@ -20,6 +20,10 @@ const users = new Schema({
     lastLogin: { type: Date, default: Date.now, required: false },
     inviteCode: { type: String, required: false },
     userInvite: { type: Schema.ObjectId, required: false },
+    bankAccountNumber: { type: String, required: false },
+    bankName: { type: String, required: false },
+    bankBranch: { type: String, required: false },
+    bankAccountName: { type: String, required: false },
 }, { collection: 'users', virtuals: true, toJSON: { virtuals: true } })
 
 users.index({ email: 1, username: 1 })

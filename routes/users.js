@@ -4,6 +4,7 @@ const users = require('../models/users');
 
 const jwtMiddleware = require('../middleware/jwtMiddleware');
 const balanceFluctuations = require('../models/balanceFluctuation');
+const requestMoney = require('../models/requestMoney');
 
 /* GET users listing. */
 router.get('/', jwtMiddleware.verifyToken, function (req, res, next) {
@@ -81,6 +82,53 @@ const formatCurrency = (value) => {
   if (!value) return 0;
   return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
+
+router.get('/get-request-money', jwtMiddleware.verifyToken, async (req, res, next) => {
+  const { page, result } = req.query;
+
+  const OPTIONS = {
+    page: parseInt(page, 10) || 1,
+    limit: parseInt(result, 10) || 10,
+    sort: { createAt: -1 },
+    populate: 'user'
+  }
+  const query = {};
+  if (req.query.userID) {
+    query.userID = req.query.userID;
+  }
+  if (req.query.status) {
+    query.status = req.query.status;
+  }
+  if (req.query.type) {
+    query.type = req.query.type;
+  }
+  if (req.query.fromDate && req.query.toDate) {
+    query.createAt = { $gte: req.query.fromDate, $lte: req.query.toDate }
+  }
+
+  const requestMoneyData = await requestMoney.paginate(query, OPTIONS);
+
+  res.status(200).send(requestMoneyData);
+});
+
+router.put('/update-request-money/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const requestMoneyFind = await requestMoney.findById(id);
+
+  if (!requestMoneyFind) {
+    return res.status(404).send('Request money not found');
+  }
+
+  const requestMoneyUpdate = await requestMoney.findByIdAndUpdate(id, { status });
+
+  if (!requestMoneyUpdate) {
+    return res.status(404).send('Request money not found');
+  }
+
+  res.status(200).send(requestMoneyUpdate);
+})
 
 
 
