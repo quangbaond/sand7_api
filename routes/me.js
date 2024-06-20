@@ -31,7 +31,26 @@ router.get('/profile', jwtMiddleware.verifyToken, function (req, res, next) {
         }
         const userFind = await users.findById(decoded.id);
         if (userFind) {
-            res.status(200).send({ user: userFind });
+            // tổng hợp tiền đặt cược hôm nay và tổng tiền thắng hôm nay
+            const totalOnbet = await historyBet.aggregate([
+                {
+                    $match: {
+                        createAt: {
+                            $gte: new Date(new Date().setHours(0, 0, 0)),
+                            $lt: new Date(new Date().setHours(23, 59, 59))
+                        },
+                        userID: userFind._id
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalOnbet: { $sum: "$amount" },
+                        totalWin: { $sum: "$win" }
+                    }
+                }
+            ]);
+            res.status(200).send({ user: userFind, totalOnbet: totalOnbet[0] });
         } else {
             res.status(404).send({ message: "Tài khoản không tồn tại" });
         }
@@ -158,5 +177,60 @@ router.post('/deposit', jwtMiddleware.verifyToken, async (req, res, next) => {
             res.status(404).send({ message: "Tài khoản không tồn tại" });
         }
     });
+});
+
+router.put('/profile', jwtMiddleware.verifyToken, async (req, res, next) => {
+    const { phone, email, fullname } = req.body;
+    console.log(req.body);
+    let token = req.session.token;
+
+    if (req.headers.authorization) {
+        token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!token) {
+        return res.status(401).send({ message: "Đăng nhập hết hạn, Vui lòng đăng nhập lại!" });
+    }
+
+    jwt.verify(token, config.secret, async (err, decoded) => {
+        if (err) {
+            return res.status(401).send({
+                message: "Tài khoản không hợp lệ",
+            });
+        }
+        const userFind = await users.findById(decoded.id);
+        if (userFind) {
+            if (phone) userFind.phone = phone;
+            if (email) userFind.email = email;
+            if (fullname) userFind.fullname = fullname;
+            await userFind.save();
+            res.status(200).send({ message: "Cập nhật thành công", user: userFind });
+        } else {
+            res.status(404).send({ message: "Tài khoản không tồn tại" });
+        }
+    });
+});
+//api report user money
+router.get('/report-user-money', jwtMiddleware.verifyToken, async (req, res, next) => {
+    // tổng hợp tiền đặt cược hôm nay và tổng tiền thắng hôm nay
+    const totalOnbet = await historyBet.aggregate([
+        {
+            $match: {
+                createAt: {
+                    $gte: new Date(new Date().setHours(0, 0, 0)),
+                    $lt: new Date(new Date().setHours(23, 59, 59))
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalOnbet: { $sum: "$amount" },
+                totalWin: { $sum: "$win" }
+            }
+        }
+    ]);
+
+    res.status(200).send(totalOnbet);
 });
 module.exports = router;

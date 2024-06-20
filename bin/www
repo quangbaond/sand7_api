@@ -173,13 +173,20 @@ const getGame = async (type = 'sx5d') => {
                   let totalPrize = item.amount * 0.05 + item.amount;
                   user.balance += totalPrize;
                   await user.save();
+                  const historyFind = await historyBet.findOne({ _id: item._id });
+                  historyFind.win = totalPrize;
+                  await historyFind.save();
                   io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
                 } else {
                   const user = await users.findOne({ _id: item.userID });
                   let amountAItem = item.amount / item.betInUser.length;
                   let totalPrize = winnings.length * amountAItem * 1.98;
+
                   user.balance += totalPrize;
                   await user.save();
+                  const historyFind = await historyBet.findOne({ _id: item._id });
+                  historyFind.win = totalPrize;
+                  await historyFind.save();
                   io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
                 }
               } else {

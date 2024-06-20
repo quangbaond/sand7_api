@@ -35,7 +35,18 @@ router.get('/list', jwtMiddleware.verifyToken, async (req, res, next) => {
   if (req.query.status) {
     query.status = req.query.status;
   }
-  // query.createAt = { $gte: req.query.fromDate, $lte: req.query.toDate }
+
+  if (req.query.search) {
+    query.$or = [
+      { username: { $regex: req.query.search, $options: 'i' } },
+      { email: { $regex: req.query.search, $options: 'i' } },
+      { phone: { $regex: req.query.search, $options: 'i' } },
+    ];
+  }
+
+  if (req.query.fromDate && req.query.toDate) {
+    query.createAt = { $gte: req.query.fromDate, $lte: req.query.toDate }
+  }
 
   const userList = await users.paginate(query, OPTIONS);
 
@@ -93,9 +104,6 @@ router.get('/get-request-money', jwtMiddleware.verifyToken, async (req, res, nex
     populate: 'user'
   }
   const query = {};
-  if (req.query.userID) {
-    query.userID = req.query.userID;
-  }
   if (req.query.status) {
     query.status = req.query.status;
   }
@@ -105,6 +113,19 @@ router.get('/get-request-money', jwtMiddleware.verifyToken, async (req, res, nex
   if (req.query.fromDate && req.query.toDate) {
     query.createAt = { $gte: req.query.fromDate, $lte: req.query.toDate }
   }
+
+  if (req.query.username) {
+    // search user regex
+    const user = await users.findOne({ username: { $regex: req.query.username, $options: 'i' } });
+    console.log(user);
+    if (user) {
+      query.userID = user._id;
+    } else {
+      query.userID = null;
+    }
+  }
+  console.log(query);
+
 
   const requestMoneyData = await requestMoney.paginate(query, OPTIONS);
 

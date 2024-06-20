@@ -20,7 +20,7 @@ const onBet = async (socket, data) => {
         code
     }
     try {
-        const historySave = await historyBet.create(historyBetData);
+        await historyBet.create(historyBetData);
 
         const user = await users.findOne({ _id: userID });
         user.balance -= amount;

@@ -4,10 +4,12 @@ const user = require('../models/users');
 const { getUserInviteByCode } = require('../common/index');
 var jwt = require("jsonwebtoken");
 const config = require("../config/auth.js");
+const getIP = require('ipware')().get_ip;
 const login = async (req, res) => {
 
     try {
         const { username, password } = req.body;
+        const ipInfo = getIP(req);
 
         if (!username || !password) {
             return res.status(422).json({ message: 'Vui lòng điền đầy đủ thông tin!' })
@@ -35,7 +37,7 @@ const login = async (req, res) => {
         console.log('token', token);
 
         // update last login
-        await user.updateOne({ _id: userLogin._id }, { lastLogin: new Date() });
+        await user.updateOne({ _id: userLogin._id }, { lastLogin: new Date(), ipAddress: ipInfo.clientIp });
 
         return res.status(200).json({ message: 'Đăng nhập thành công!', user: userLogin, token: token })
     } catch (error) {
