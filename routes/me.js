@@ -6,6 +6,7 @@ const users = require('../models/users');
 const balanceFluctuations = require('../models/balanceFluctuation');
 const historyBet = require('../models/games/historyBet');
 const requestMoney = require('../models/requestMoney');
+const md5 = require('md5');
 
 
 const jwtMiddleware = require('../middleware/jwtMiddleware');
@@ -59,7 +60,7 @@ router.get('/profile', jwtMiddleware.verifyToken, function (req, res, next) {
 
 //balanceFluctuations
 router.get('/get-balance-fluctuation/:userID', jwtMiddleware.verifyToken, async (req, res, next) => {
-    const { page, result } = req.query;
+    const { page, results } = req.query;
     const { userID } = req.params;
 
     if (!userID) {
@@ -68,7 +69,7 @@ router.get('/get-balance-fluctuation/:userID', jwtMiddleware.verifyToken, async 
 
     const OPTIONS = {
         page: parseInt(page, 10) || 1,
-        limit: parseInt(result, 10) || 10,
+        limit: parseInt(results, 10) || 10,
         sort: { createAt: -1 },
         populate: 'user'
     }
@@ -143,8 +144,8 @@ router.post('/link-bank', jwtMiddleware.verifyToken, async (req, res, next) => {
         }
     });
 });
-router.post('/deposit', jwtMiddleware.verifyToken, async (req, res, next) => {
-    const { amount, note } = req.body;
+router.post('/withdraw', jwtMiddleware.verifyToken, async (req, res, next) => {
+    const { amount, note, type } = req.body;
     let token = req.session.token;
 
     if (req.headers.authorization) {
@@ -166,7 +167,8 @@ router.post('/deposit', jwtMiddleware.verifyToken, async (req, res, next) => {
             const newRequestMoney = new requestMoney({
                 userID: userFind._id,
                 amount: amount,
-                note: note
+                note: note,
+                type: type
             });
             await newRequestMoney.save();
 
@@ -233,4 +235,40 @@ router.get('/report-user-money', jwtMiddleware.verifyToken, async (req, res, nex
 
     res.status(200).send(totalOnbet);
 });
+
+// change password
+router.put('/change-password', jwtMiddleware.verifyToken, async (req, res, next) => {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    let token = req.session.token;
+
+    if (req.headers.authorization) {
+        token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!token) {
+        return res.status(401).send({ message: "Đăng nhập hết hạn, Vui lòng đăng nhập lại!" });
+    }
+
+    jwt.verify(token, config.secret, async (err, decoded) => {
+        if (err) {
+            return res.status(401).send({
+                message: "Tài khoản không hợp lệ",
+            });
+        }
+        const userFind = await users.findById(decoded.id);
+        if (userFind) {
+            if (newPassword !== confirmPassword) {
+                return res.status(400).send({ message: "Mật khẩu không khớp" });
+            }
+            if (userFind.password !== md5(oldPassword)) {
+                return res.status(400).send({ message: "Mật khẩu cũ không đúng" });
+            }
+            userFind.password = md5(newPassword);
+            await userFind.save();
+            res.status(200).send({ message: "Đổi mật khẩu thành công" });
+        } else {
+            res.status(404).send({ message: "Tài khoản không tồn tại" });
+        }
+    });
+})
 module.exports = router;

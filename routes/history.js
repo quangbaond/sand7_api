@@ -17,11 +17,11 @@ router.get('/id/:sessionId', jwtMiddleware.verifyToken, async (req, res, next) =
 })
 
 router.get('/get/:code', jwtMiddleware.verifyToken, async (req, res, next) => {
-    const { page, limit } = req.query;
+    const { page, results } = req.query;
     const { code } = req.params;
     const options = {
         page: parseInt(page, 10) || 1,
-        limit: parseInt(limit, 10) || 10,
+        limit: parseInt(results, 10) || 10,
         sort: { createAt: -1 },
         populate: 'user betData'
     }

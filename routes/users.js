@@ -12,11 +12,11 @@ router.get('/', jwtMiddleware.verifyToken, function (req, res, next) {
 });
 // list
 router.get('/list', jwtMiddleware.verifyToken, async (req, res, next) => {
-  const { page, result } = req.query;
+  const { page, results } = req.query;
 
   const OPTIONS = {
     page: parseInt(page, 10) || 1,
-    limit: parseInt(result, 10) || 10,
+    limit: parseInt(results, 10) || 10,
     sort: { createAt: -1 },
   }
   const query = {};
@@ -95,11 +95,11 @@ const formatCurrency = (value) => {
 }
 
 router.get('/get-request-money', jwtMiddleware.verifyToken, async (req, res, next) => {
-  const { page, result } = req.query;
+  const { page, results } = req.query;
 
   const OPTIONS = {
     page: parseInt(page, 10) || 1,
-    limit: parseInt(result, 10) || 10,
+    limit: parseInt(results, 10) || 10,
     sort: { createAt: -1 },
     populate: 'user'
   }
