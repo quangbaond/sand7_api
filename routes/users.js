@@ -5,6 +5,7 @@ const users = require('../models/users');
 const jwtMiddleware = require('../middleware/jwtMiddleware');
 const balanceFluctuations = require('../models/balanceFluctuation');
 const requestMoney = require('../models/requestMoney');
+const md5 = require('md5');
 
 /* GET users listing. */
 router.get('/', jwtMiddleware.verifyToken, function (req, res, next) {
@@ -150,6 +151,30 @@ router.put('/update-request-money/:id', jwtMiddleware.verifyToken, async (req, r
 
   res.status(200).send(requestMoneyUpdate);
 })
+
+router.put('/change-password/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
+  const { id } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  const user = await users.findById(id);
+
+  if (!user) {
+    return res.status(404).send({ message: 'Không tìm thấy người dùng' });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).send('Mật khẩu không khớp');
+  }
+
+  const newPassword = md5(password);
+
+  const userUpdate = await users.findByIdAndUpdate(id, { password: newPassword });
+
+  if (!userUpdate) {
+    return res.status(404).send({ message: 'Không tìm thấy người dùng' });
+  }
+  res.status(200).send(userUpdate);
+});
 
 
 

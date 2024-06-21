@@ -59,34 +59,50 @@ router.get('/profile', jwtMiddleware.verifyToken, function (req, res, next) {
 });
 
 //balanceFluctuations
-router.get('/get-balance-fluctuation/:userID', jwtMiddleware.verifyToken, async (req, res, next) => {
+router.get('/get-balance-fluctuation', jwtMiddleware.verifyToken, async (req, res, next) => {
     const { page, results } = req.query;
-    const { userID } = req.params;
+    let token = req.session.token;
 
-    if (!userID) {
-        return res.status(400).send({ message: "Người dùng không hợp lệ" });
+    if (req.headers.authorization) {
+        token = req.headers.authorization.split(" ")[1];
     }
 
-    const OPTIONS = {
-        page: parseInt(page, 10) || 1,
-        limit: parseInt(results, 10) || 10,
-        sort: { createAt: -1 },
-        populate: 'user'
-    }
-    const query = {};
-    query.userID = userID;
-    if (req.query.type) {
-        query.type = req.query.type;
-    }
-    if (req.query.fromDate && req.query.toDate) {
-        query.createAt = { $gte: req.query.fromDate, $lte: req.query.toDate }
+    if (!token) {
+        return res.status(401).send({ message: "Đăng nhập hết hạn, Vui lòng đăng nhập lại!" });
     }
 
-    const balanceFluctuationData = await balanceFluctuations.paginate(query, OPTIONS);
+    jwt.verify(token, config.secret, async (err, decoded) => {
+        if (err) {
+            return res.status(401).send({
+                message: "Tài khoản không hợp lệ",
+            });
+        }
+        const userFind = await users.findById(decoded.id);
+        if (userFind) {
+            const OPTIONS = {
+                page: parseInt(page, 10) || 1,
+                limit: parseInt(results, 10) || 10,
+                sort: { createAt: -1 },
+                populate: 'user'
+            }
+            const query = {};
+            query.userID = userFind._id;
+            if (req.query.type) {
+                query.type = req.query.type;
+            }
+            if (req.query.fromDate && req.query.toDate) {
+                query.createAt = { $gte: req.query.fromDate, $lte: req.query.toDate }
+            }
 
-    res.status(200).send(balanceFluctuationData);
+            const balanceFluctuationData = await balanceFluctuations.paginate(query, OPTIONS);
 
-})
+            res.status(200).send(balanceFluctuationData);
+        } else {
+            res.status(404).send({ message: "Tài khoản không tồn tại" });
+        }
+    });
+});
+
 router.get('/historybet/:userID', jwtMiddleware.verifyToken, async (req, res, next) => {
     const { page, result } = req.query;
     const { userID } = req.params;
@@ -174,6 +190,16 @@ router.post('/withdraw', jwtMiddleware.verifyToken, async (req, res, next) => {
 
             userFind.balance -= amount;
             await userFind.save();
+
+            const balanceFluctuationData = new balanceFluctuations({
+                userID: userFind._id,
+                amount: amount,
+                type: 'minus',
+                description: 'Yêu cầu tút tiền',
+                reson: note
+            });
+            await balanceFluctuationData.save();
+
             res.status(200).send({ message: "Yêu cầu rút tiền thành công", user: userFind });
         } else {
             res.status(404).send({ message: "Tài khoản không tồn tại" });
