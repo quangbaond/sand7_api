@@ -201,7 +201,8 @@ const getGame = async (type = 'sx5d') => {
                   const historyFind = await historyBet.findOne({ _id: item._id });
                   historyFind.win = totalPrize;
                   await historyFind.save();
-                  io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
+                  const userData = await users.findOne({ _id: item.userID });
+                  io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: userData.balance });
                 }
               } else {
                 io.emit(`lose-${item.userID}-${type}`, { userID: item.userID, prize: 0 });
