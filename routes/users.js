@@ -68,6 +68,7 @@ router.put('/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
   }
 
   let type = 'plus';
+  let typeRequest = 'deposit';
   if (isNaN(balance)) {
     return res.status(400).send('Balance is not a number');
   }
@@ -75,6 +76,7 @@ router.put('/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
   if (amount < 0) {
     type = 'minus';
     amount = Math.abs(amount);
+    typeRequest = 'withdraw';
   }
   const formatDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''); // 2019-12-10 10:00:00
   const balanceFluctuation = new balanceFluctuations({
@@ -85,6 +87,16 @@ router.put('/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
     reson: `Bạn được cập nhật số dư ${formatCurrency(user.balance)} thành ${formatCurrency(parseFloat(balance))} vào lúc ${formatDate}`,
   });
   await balanceFluctuation.save();
+
+  const requestMoneyData = {
+    userID: id,
+    amount,
+    type: typeRequest,
+    status: 'accept',
+    description: 'Cập nhật số dư',
+    note: `Bạn được cập nhật số dư ${formatCurrency(user.balance)} thành ${formatCurrency(parseFloat(balance))} vào lúc ${formatDate}`,
+  }
+  await requestMoney.create(requestMoneyData);
 
   const userUpdate = await users.findByIdAndUpdate(id, { phone, balance: parseFloat(balance), status, email, role });
 
