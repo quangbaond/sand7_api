@@ -181,11 +181,11 @@ const getGame = async (type = 'sx5d') => {
                 } else if(Thua.length > 0) {
                   const user = await users.findOne({ _id: item.userID });
                   let amountAItem = item.amount / item.betInUser.length;
-                  let totalPrize = Thua.length * amountAItem * 1.98;
+                  // let totalPrize = Thua.length * amountAItem * 1.98;
                   // tính ra 5% tổng số tiền cược
                   const totalPrize5 = item.amount * 0.05;
-                  user.balance += totalPrize;
-                  user.balance -= totalPrize5;
+                  // user.balance += totalPrize;
+                  user.balance += historyFind.amount - totalPrize5;
                   await user.save();
                   const historyFind = await historyBet.findOne({ _id: item._id });
                   historyFind.win = totalPrize;
