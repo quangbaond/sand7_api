@@ -8,3 +8,4 @@ router.post('/logout', JwtMiddleware.verifyToken, authController.logout);
 router.post('/register', JwtMiddleware.notLogin, authController.register);
 
 module.exports = router;
+

@@ -209,13 +209,13 @@ const createSession = async (type = 'sx5d') => {
   getGame(type);
 }
 createSession('sx5d');
-createSession('xs2');
-createSession('veso');
-createSession('mayman');
-createSession('nhanh3');
-createSession('pkdon');
-createSession('veso1');
-createSession('3d');
+// createSession('xs2');
+// createSession('veso');
+// createSession('mayman');
+// createSession('nhanh3');
+// createSession('pkdon');
+// createSession('veso1');
+// createSession('3d');
 
 function checkWin(results, bets, setting = '2.1', type = 'sx5d') {
   const prizeTypes = {
@@ -232,7 +232,7 @@ function checkWin(results, bets, setting = '2.1', type = 'sx5d') {
     const result = results[id];
 
     // Kiểm tra điều kiện setting == '2.1' và id == 0
-    if (setting === '2.1' && id === 0 && (value === 1 || value === 2) && type === 'sx5d') {
+    if (id === 0 && (value === 1 || value === 2) && type === 'sx5d') {
       prize.push({ id, prize: 'Special' });
     } else {
       if (value === 1 && result > 2) { // Large (number > 2)

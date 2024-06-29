@@ -22,7 +22,9 @@ const createSx5d = async (type) => {
         timeStart: new Date(),
         resultOdd: result % 2 !== 0 ? true : false,
         resultEven: result % 2 === 0 ? true : false,
-        timeEnd: new Date(new Date().getTime() + 300000),
+        // timeEnd: new Date(new Date().getTime() + 300000),
+        timeEnd: new Date(new Date().getTime() + 60000),
+
         type: type || 'sx5d'
     }
 
