@@ -40,6 +40,13 @@ users.virtual('balanceFluctuations', {
     foreignField: 'userID',
     justOne: false
 });
+
+users.virtual('historyBet', {
+    ref: 'historyBet',
+    localField: '_id',
+    foreignField: 'userID',
+    justOne: false
+});
 users.plugin(mongoosePaginate)
 
 module.exports = mongoose.model('users', users)

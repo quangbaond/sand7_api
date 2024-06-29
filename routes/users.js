@@ -19,6 +19,7 @@ router.get('/list', jwtMiddleware.verifyToken, async (req, res, next) => {
     page: parseInt(page, 10) || 1,
     limit: parseInt(results, 10) || 10,
     sort: { createAt: -1 },
+    populate: 'historyBet'
   }
   const query = {};
   if (req.query.username) {

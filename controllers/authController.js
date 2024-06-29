@@ -34,7 +34,10 @@ const login = async (req, res) => {
 
         req.session.token = token;
 
-        console.log('token', token);
+        // check user status
+        if (userLogin.status !== 'active') {
+            return res.status(400).json({ message: 'Tài khoản đã bị khóa!' })
+        }
 
         // update last login
         await user.updateOne({ _id: userLogin._id }, { lastLogin: new Date(), ipAddress: ipInfo.clientIp });
