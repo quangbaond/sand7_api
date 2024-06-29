@@ -3,11 +3,7 @@ const init = require('../common/init');
 require('dotenv').config();
 
 // connect db
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-}).then(() => {
+mongoose.connect(process.env.MONGO_URI).then(() => {
     console.info('Kết nối cơ sở dữ liệu thành công! 🙋');
     init.initAdmin();
     init.intSettingGame();
