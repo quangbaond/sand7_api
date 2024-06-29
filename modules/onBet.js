@@ -26,25 +26,25 @@ const onBet = async (socket, data) => {
         const user = await users.findOne({ _id: userID });
 
         // check setting
-        const settingData = await setting.findOne({ name: 'game' });
-        let amountData = amount;
-        // check xem người dùng có đánh id = 0 và value là 1 và 2 hay không
-        // id === 0 && (value === 1 || value === 2) && type === 'sx5d'
-        betInUser.forEach(bet => {
-            const { id, value } = bet;
+        // const settingData = await setting.findOne({ name: 'game' });
+        // let amountData = amount;
+        // // check xem người dùng có đánh id = 0 và value là 1 và 2 hay không
+        // // id === 0 && (value === 1 || value === 2) && type === 'sx5d'
+        // betInUser.forEach(bet => {
+        //     const { id, value } = bet;
 
-            // Kiểm tra điều kiện setting == '2.1' và id == 0
-            if (id === 0 && (value === 1 || value === 2) && code === 'sx5d') {
-                if (settingData.value === '1.98') {
-                    // trừ 5% số tiền đặt cược
-                    amountData = amount + amount * 0.05;
+        //     // Kiểm tra điều kiện setting == '2.1' và id == 0
+        //     if (id === 0 && (value === 1 || value === 2) && code === 'sx5d') {
+        //         if (settingData.value === '1.98') {
+        //             // trừ 5% số tiền đặt cược
+        //             amountData = amount + amount * 0.05;
 
-                } else {
-                   amountData = amount;
-                }
-            }
-        });
-        user.balance -= amountData;
+        //         } else {
+        //            amountData = amount;
+        //         }
+        //     }
+        // });
+        user.balance -= amount;
 
         await user.save();
 

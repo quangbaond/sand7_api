@@ -164,6 +164,7 @@ const getGame = async (type = 'sx5d') => {
                 // check winner and send prize is special
 
                 const special = winnings.filter(item => item.prize === 'Special');
+                const Thua = winnings.filter(item => item.prize === 'Thua');
 
                 if (special.length > 0) {
                   const user = await users.findOne({ _id: item.userID });
@@ -172,6 +173,19 @@ const getGame = async (type = 'sx5d') => {
                   // totalPrize sẽ được tính theo tỉ lệ 5% của tổng số tiền cược và trả lại số tiền cược
                   let totalPrize = item.amount * 0.05 + item.amount;
                   user.balance += totalPrize;
+                  await user.save();
+                  const historyFind = await historyBet.findOne({ _id: item._id });
+                  historyFind.win = totalPrize;
+                  await historyFind.save();
+                  io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
+                } else if(Thua.length > 0) {
+                  const user = await users.findOne({ _id: item.userID });
+                  let amountAItem = item.amount / item.betInUser.length;
+                  let totalPrize = Thua.length * amountAItem * 1.98;
+                  // tính ra 5% tổng số tiền cược
+                  const totalPrize5 = item.amount * 0.05;
+                  user.balance += totalPrize;
+                  user.balance -= totalPrize5;
                   await user.save();
                   const historyFind = await historyBet.findOne({ _id: item._id });
                   historyFind.win = totalPrize;
@@ -233,7 +247,11 @@ function checkWin(results, bets, setting = '2.1', type = 'sx5d') {
 
     // Kiểm tra điều kiện setting == '2.1' và id == 0
     if (id === 0 && (value === 1 || value === 2) && type === 'sx5d') {
-      prize.push({ id, prize: 'Special' });
+      if(setting === '2.1') {
+        prize.push({ id, prize: 'Special' });
+      } else {
+        prize.push({ id, prize: 'Thua' });
+      }
     } else {
       if (value === 1 && result > 2) { // Large (number > 2)
         prize.push({ id, prize: prizeTypes[1] });
