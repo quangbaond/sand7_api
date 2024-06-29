@@ -1,9 +1,9 @@
 var mongoose = require('mongoose');
 const init = require('../common/init');
-
+require('dotenv').config();
 
 // connect db
-mongoose.connect('mongodb://localhost:27017/sandsv7', { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
     console.info('Kết nối cơ sở dữ liệu thành công! 🙋');
     init.initAdmin();
     init.intSettingGame();
