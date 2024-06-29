@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.js");
+const User = require('../models/users');
 
 const verifyToken = (req, res, next) => {
     // get token from header
@@ -14,11 +15,17 @@ const verifyToken = (req, res, next) => {
         return res.status(401).send({ message: "Đăng nhập hết hạn, Vui lòng đăng nhập lại!" });
     }
 
-    jwt.verify(token, config.secret, (err, decoded) => {
+    jwt.verify(token, config.secret, async (err, decoded) => {
         if (err) {
             return res.status(401).send({
                 message: "Tài khoản không hợp lệ",
             });
+        }
+
+        const user = await User.findOne({ _id: decoded.id });
+        console.log(user);
+        if (user.status !== 'active') {
+            return res.status(401).json({ message: 'Tài khoản đã bị khóa!' })
         }
 
         req.userId = decoded.id;
