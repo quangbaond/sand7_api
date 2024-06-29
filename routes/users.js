@@ -67,6 +67,9 @@ router.put('/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
   }
 
   let type = 'plus';
+  if (isNaN(balance)) {
+    return res.status(400).send('Balance is not a number');
+  }
   let amount = balance - user.balance;
   if (amount < 0) {
     type = 'minus';

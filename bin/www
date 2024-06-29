@@ -184,13 +184,17 @@ const getGame = async (type = 'sx5d') => {
                   // let totalPrize = Thua.length * amountAItem * 1.98;
                   // tính ra 5% tổng số tiền cược
                   const totalPrize5 = item.amount * 0.05;
-                  // user.balance += totalPrize;
-                  user.balance += historyFind.amount - totalPrize5;
-                  await user.save();
+                  // user.balance - 5% tổng số tiền cược
+
                   const historyFind = await historyBet.findOne({ _id: item._id });
-                  historyFind.win = totalPrize;
+                  user.balance += historyFind.amount
+                  user.balance -= totalPrize5;
+                  await user.save();
+                  historyFind.win = totalPrize5;
                   await historyFind.save();
-                  io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
+                  const userData = await users.findOne({ _id: item.userID });
+
+                  io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: userData.balance });
                 } else {
                   const user = await users.findOne({ _id: item.userID });
                   let amountAItem = item.amount / item.betInUser.length;
