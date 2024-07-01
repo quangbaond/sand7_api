@@ -11,6 +11,7 @@ const historyBet = new Schema({
     betInUser: { type: Array, required: true },
     code: { type: String, required: true },
     win: { type: Number, default: 0 },
+    interest: { type: Number, default: 0 },
 }, { collection: 'historyBet', virtuals: true, toJSON: { virtuals: true } })
 
 historyBet.plugin(mongoosePaginate)

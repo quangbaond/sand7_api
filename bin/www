@@ -176,6 +176,7 @@ const getGame = async (type = 'sx5d') => {
                   await user.save();
                   const historyFind = await historyBet.findOne({ _id: item._id });
                   historyFind.win = totalPrize;
+                  historyFind.interest = totalPrize - item.amount;
                   await historyFind.save();
                   io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: totalPrize });
                 } else if(Thua.length > 0) {
@@ -191,6 +192,7 @@ const getGame = async (type = 'sx5d') => {
                   user.balance -= totalPrize5;
                   await user.save();
                   historyFind.win = totalPrize5;
+                  historyFind.interest = totalPrize5 - item.amount;
                   await historyFind.save();
                   const userData = await users.findOne({ _id: item.userID });
 
@@ -204,6 +206,7 @@ const getGame = async (type = 'sx5d') => {
                   await user.save();
                   const historyFind = await historyBet.findOne({ _id: item._id });
                   historyFind.win = totalPrize;
+                  historyFind.interest = totalPrize - item.amount;
                   await historyFind.save();
                   const userData = await users.findOne({ _id: item.userID });
                   io.emit(`win-${item.userID}-${type}`, { userID: item.userID, prize: userData.balance });
