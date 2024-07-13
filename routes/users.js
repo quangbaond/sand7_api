@@ -193,6 +193,25 @@ router.put('/change-password/:id', jwtMiddleware.verifyToken, async (req, res, n
   res.status(200).send(userUpdate);
 });
 
+//change-bank
+router.put('/change-bank/:id', jwtMiddleware.verifyToken, async (req, res, next) => {
+  const { id } = req.params;
+  const { bankName, bankAccountNumber, bankBranch, bankAccountName } = req.body;
+
+  const user = await users.findById(id);
+
+  if (!user) {
+    return res.status(404).send({ message: 'Không tìm thấy người dùng' });
+  }
+
+  const userUpdate = await users.findByIdAndUpdate(id, { bankName, bankAccountNumber, bankBranch, bankAccountName });
+
+  if (!userUpdate) {
+    return res.status(404).send({ message: 'Không tìm thấy người dùng' });
+  }
+  res.status(200).send(userUpdate);
+});
+
 
 
 module.exports = router;
