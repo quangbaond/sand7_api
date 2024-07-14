@@ -14,11 +14,11 @@ router.get('/', jwtMiddleware.verifyToken, function (req, res, next) {
 });
 // list
 router.get('/list', jwtMiddleware.verifyToken, async (req, res, next) => {
-  const { page, results } = req.query;
+  const { page, limit } = req.query;
 
   const OPTIONS = {
     page: parseInt(page, 10) || 1,
-    limit: parseInt(results, 10) || 10,
+    limit: parseInt(limit, 10) || 10,
     sort: { createAt: -1 },
     populate: 'historyBet'
   }
@@ -113,11 +113,11 @@ const formatCurrency = (value) => {
 }
 
 router.get('/get-request-money', jwtMiddleware.verifyToken, async (req, res, next) => {
-  const { page, results } = req.query;
+  const { page, limit } = req.query;
 
   const OPTIONS = {
     page: parseInt(page, 10) || 1,
-    limit: parseInt(results, 10) || 10,
+    limit: parseInt(limit, 10) || 10,
     sort: { createAt: -1 },
     populate: 'user'
   }
@@ -211,7 +211,5 @@ router.put('/change-bank/:id', jwtMiddleware.verifyToken, async (req, res, next)
   }
   res.status(200).send(userUpdate);
 });
-
-
 
 module.exports = router;
